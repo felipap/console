@@ -12,7 +12,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class ArduinoUsbPort extends CommonUsbSerialPort {
+public class ArduinoUsbPort extends CommonUsbSerialPort {
 
     private final String TAG = ArduinoUsbPort.class.getSimpleName();
 
@@ -23,6 +23,7 @@ class ArduinoUsbPort extends CommonUsbSerialPort {
     private UsbEndpoint mControlEndpoint;
     private UsbEndpoint mReadEndpoint;
     private UsbEndpoint mWriteEndpoint;
+    private UsbDevice mDevice;
 
     // What are these?
     private boolean mDtr = false;
@@ -38,6 +39,7 @@ class ArduinoUsbPort extends CommonUsbSerialPort {
 
     public ArduinoUsbPort(UsbDevice device, int portNumber) {
         super(device, portNumber);
+        mDevice = device;
         mEnableAsyncReads = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
     }
 
@@ -45,7 +47,6 @@ class ArduinoUsbPort extends CommonUsbSerialPort {
         return mConnection.controlTransfer(
                 USB_RT_ACM, request, value, 0, buf, buf != null ? buf.length : 0, 5000);
     }
-
 
     @Override
     public void open(UsbDeviceConnection connection) throws IOException {

@@ -3,7 +3,6 @@ package printer;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 public class SerialIOManager implements Runnable {
@@ -14,7 +13,7 @@ public class SerialIOManager implements Runnable {
 	private static final int READ_WAIT_MILLIS = 200;
 	private static final int BUFSIZ = 4096;
 
-	private final SerialDriver mDriver;
+	private final ArduinoUsbPort mPort;
 
 	private final ByteBuffer mReadBuffer = ByteBuffer.allocate(BUFSIZ);
 
@@ -49,15 +48,15 @@ public class SerialIOManager implements Runnable {
 	/**
 	 * Creates a new instance with no listener.
 	 */
-	public SerialIOManager(SerialDriver driver) {
+	public SerialIOManager(ArduinoUsbPort driver) {
 		this(driver, null);
 	}
 
 	/**
 	 * Creates a new instance with the provided listener.
 	 */
-	public SerialIOManager(SerialDriver driver, Listener listener) {
-		mDriver = driver;
+	public SerialIOManager(ArduinoUsbPort port, Listener listener) {
+		mPort = port;
 		mListener = listener;
 
 		Log.d(TAG, "thread");
@@ -66,7 +65,7 @@ public class SerialIOManager implements Runnable {
 			public void run() {
 				Log.d(TAG, "run");
 				try {
-					int len = mDriver.read(mReadBuffer.array(), READ_WAIT_MILLIS);
+					int len = mPort.read(mReadBuffer.array(), READ_WAIT_MILLIS);
 					if (len > 0) {
 						if (DEBUG) Log.d(TAG, "Read data len=" + len);
 						final Listener listener = getListener();
@@ -185,7 +184,7 @@ public class SerialIOManager implements Runnable {
 				Log.d(TAG, "Writing data \""+ new String(outBuff, "ASCII") + "\"");
 			}
 			Log.d(TAG, "Writing outBuff");
-			mDriver.write(outBuff, READ_WAIT_MILLIS);
+			mPort.write(outBuff, READ_WAIT_MILLIS);
 		}
 	}
 
