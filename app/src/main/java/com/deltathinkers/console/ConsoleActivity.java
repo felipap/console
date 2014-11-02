@@ -14,6 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 import printer.Printer;
 
@@ -66,10 +69,31 @@ public class ConsoleActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "RESUME");
+        if (sPort == null) {
+
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopIOManager();
+        if (sPort != null) {
+            try {
+                sPort.close();
+            } catch (IOException e) {
+                printConsole("ERROR: Failed to close sPort");
+            }
+            sPort = null;
+        }
+        finish();
     }
 
     private void onFailedPermission () {
-
+        Toast.makeText(getBaseContext(),
+                "Failed to get permission. wtf",
+                Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void onHasPermission (UsbDevice device) {
@@ -79,7 +103,6 @@ public class ConsoleActivity extends Activity {
 
     private void printConsole (String text) {
         mDumpTextView.append(text);
-
     }
 
 
