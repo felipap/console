@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.deltathinkers.console" >
 
+    <uses-sdk android:minSdkVersion="12" />
+    <uses-feature android:name="android.hardware.usb.host" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -10,9 +13,14 @@
         <activity
             android:name="com.deltathinkers.console.ConsoleActivity"
             android:label="@string/app_name" >
+
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/printer_filter" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
