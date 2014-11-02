@@ -13,11 +13,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,6 +42,8 @@ public class ConsoleActivity extends Activity {
     private TextView mTitleTextView;
     private TextView mDumpTextView;
     private ScrollView mScrollView;
+    private EditText mEditText;
+    private Button mSendButton;
 
     private ArduinoUsbPort sPort = null;
 
@@ -72,6 +78,21 @@ public class ConsoleActivity extends Activity {
         mTitleTextView = (TextView) findViewById(R.id.demoTitle);
         mDumpTextView = (TextView) findViewById(R.id.consoleText);
         mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+        mSendButton = (Button) findViewById(R.id.sendButton);
+        mEditText = (EditText) findViewById(R.id.editText);
+
+        mSendButton.setOnClickListener(new View.OnClickListener () {
+            public void onClick(View v) {
+                String result = mEditText.getText().toString();
+                if (!result.isEmpty()) {
+                    try {
+                        sendMessage(result);
+                        mEditText.setText("");
+                    } catch(IOException e) {
+                    }
+                }
+            }
+        });
 
         PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
@@ -128,6 +149,15 @@ public class ConsoleActivity extends Activity {
             mTitleTextView.setText("Serial device: " + sPort.getClass().getSimpleName());
         }
         onDeviceStateChange();
+    }
+
+    private void sendMessage(String message) throws IOException {
+        if (mSerialIoManager == null) {
+            printConsole("Failed to send message. No Serial Io Manager instantiated.\n");
+        } else {
+            printConsole("(sent): "+message+(message.endsWith("\n")?"":"\n"));
+            mSerialIoManager.writeAsync(message.getBytes(Charset.forName("UTF-8")));
+        }
     }
 
     private void stopIoManager() {
@@ -221,7 +251,7 @@ public class ConsoleActivity extends Activity {
 
         public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, "OOOOO");
+        Log.d(TAG, "Returned from Broadcast: "+action);
         if (ACTION_USB_PERMISSION.equals(action)) {
             synchronized (this) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
