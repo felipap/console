@@ -16,7 +16,7 @@ public class Printer {
 
     // Id. for arduino (0x0043 for uno)
     private static final int VID = 0x2341;
-    private static final int PID = 0x0043;
+    private static final int PID = 0x0042;
 
     public Printer(Activity activity) {
 

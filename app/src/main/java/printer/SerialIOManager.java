@@ -160,7 +160,7 @@ public class SerialIOManager implements Runnable {
 		}
 	}
 
-	private int l = 0;
+	private long l = 0;
 
 	private void step() throws IOException {
 		// Handle outgoing data.

@@ -4,12 +4,15 @@
 
     <uses-sdk android:minSdkVersion="12" />
     <uses-feature android:name="android.hardware.usb.host" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!--<uses-feature android:glEsVersion="0x00011000" android:required="true"/>-->
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
         <activity
             android:name="com.deltathinkers.console.ConsoleActivity"
             android:label="@string/app_name" >
@@ -19,9 +22,27 @@
             </intent-filter>
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/printer_filter" />
 
+        </activity>
+
+        <activity
+            android:name="com.deltathinkers.console.PickerActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <!--<category android:name="android.intent.category.BROWSABLE" />-->
+                <!--<data android:scheme="file" />-->
+                <!--<data android:mimeType="*/*" />-->
+                <!--<data android:pathPattern=".*\\.ngc" />-->
+                <!--<data android:host="*" />-->
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="gcodestreamer"/>
             </intent-filter>
         </activity>
     </application>

@@ -20,7 +20,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,6 +97,37 @@ public class ConsoleActivity extends Activity {
             }
         });
 
+        String filepath;
+        File file;
+        Boolean isFile = false;
+        if (getIntent().getAction().equals("android.intent.action.VIEW")) {
+            //Called by a file manager.
+            Log.d(TAG, "URI");
+            isFile = true;
+            String path = getIntent().getDataString();
+            filepath = path.replace("file://", "");
+            try {
+                Log.d(TAG, "Data:" + filepath);
+                mTitleTextView.setText(filepath);
+                file = new File(filepath);
+            } catch (Exception e) {
+                //File does not exist or missing permissions
+                e.printStackTrace();
+                return;
+            }
+
+            if (file.exists() && file.canRead()) {
+                mTitleTextView.setText("Streaming from file.");
+                Toast.makeText(getBaseContext(), "Exists and can read.", Toast.LENGTH_SHORT).show();
+            } else {
+                mTitleTextView.setText("Can't read.");
+            }
+        } else {
+            //called by GCodeViewerActivity
+            Log.d(TAG, "Not to stream");
+        }
+
+        Toast.makeText(getBaseContext(),"Welcome!",Toast.LENGTH_SHORT).show();
         PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 
@@ -102,18 +136,36 @@ public class ConsoleActivity extends Activity {
         UsbDevice device = Printer.findPrinter(this);
         if (device == null) {
             mTitleTextView.setText("Printer device not found.");
-        }
-        mTitleTextView.setText("Printer device found.");
-        Log.d(TAG, "Found device" + device.getDeviceName());
-
-        if (usbManager.hasPermission(device)) {
-            Log.d(TAG, "Has permission.");
-            onHasPermission(device);
         } else {
-            printConsole("No permissions. Attempting to get it now.\n");
-            Log.e(TAG, "Has NO permission.");
-            registerReceiver(mUsbReceiver, filter);
-            usbManager.requestPermission(device, mPermissionIntent);
+            mTitleTextView.setText("Printer device found.");
+            Log.d(TAG, "Found device" + device.getDeviceName());
+
+            if (usbManager.hasPermission(device)) {
+                Log.d(TAG, "Has permission.");
+                onHasPermission(device);
+            } else {
+                printConsole("No permissions. Attempting to get it now.\n");
+                Log.e(TAG, "Has NO permission.");
+                registerReceiver(mUsbReceiver, filter);
+                usbManager.requestPermission(device, mPermissionIntent);
+            }
+        }
+
+        if (isFile) {
+            Thread thread = new Thread() {
+                public void run() {
+                    while (true) {
+                        try {
+                            // do something here
+                            Log.d(TAG, "local Thread sleeping");
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Log.e(TAG, "local Thread error", e);
+                        }
+                    }
+                }
+            };
+            thread.start();
         }
     }
 
@@ -151,7 +203,9 @@ public class ConsoleActivity extends Activity {
         onDeviceStateChange();
     }
 
+
     private void sendMessage(String message) throws IOException {
+        message += "\n";
         if (mSerialIoManager == null) {
             printConsole("Failed to send message. No Serial Io Manager instantiated.\n");
         } else {
@@ -182,7 +236,7 @@ public class ConsoleActivity extends Activity {
     }
 
     private void updateReceivedData(byte[] data) {
-        printConsole("Read " + data.length + " bytes: \n" + HexDump.dumpHexString(data) + "\n\n");
+        printConsole("Read " + data.length + " bytes: \n$ " + HexDump.dumpHexString(data) + "\n\n");
     }
 
     @Override
